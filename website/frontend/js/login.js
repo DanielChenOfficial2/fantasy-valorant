@@ -40,29 +40,36 @@ window.addEventListener('load', () => {
 
   const ui = new firebaseui.auth.AuthUI(firebase.auth());
 
-  ui.start('#firebaseui-auth-container', {
+  const uiConfig = {
+    callbacks: {
+      signInSuccessWithAuthResult: function(authResult, redirectUrl) {
+        // User successfully signed in.
+        // Return type determines whether we continue the redirect automatically
+        // or whether we leave that to developer to handle.
+        return true;
+      },
+      uiShown: function() {
+        // The widget is rendered.
+        // Hide the loader.
+        // document.getElementById('loader').style.display = 'none';
+      }
+    },
+    // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
+    signInFlow: 'popup',
+    signInSuccessUrl: 'success.html',
     signInOptions: [
-      firebase.auth.EmailAuthProvider.PROVIDER_ID
+      // r.e. email signin with email/password instead of email link:
+      // https://github.com/firebase/firebaseui-web/issues/1040
+      // https://cloud.google.com/identity-platform/docs/admin/email-enumeration-protection#disable
+      // probably opens up some attack vectors but I don't care enough right now
+      // firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+      firebase.auth.EmailAuthProvider.PROVIDER_ID,
     ],
-  });
+    // Terms of service url.
+    tosUrl: '<your-tos-url>',
+    // Privacy policy url.
+    privacyPolicyUrl: '<your-privacy-policy-url>'
+  };
 
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      // User is already signed in, redirect to appropriate page
-      console.log('User already signed in:', user);
-      const username = user.email || user.displayName; // Use email or display name if available
-      const redirectUrl = "../html/success.html"; // Replace with your desired target page
-
-      window.location.href = `${redirectUrl}?username=${username}`;
-    } else {
-      // User is not signed in, proceed with FirebaseUI login flow
-      const uiConfig = {
-          // signInSuccessUrl: '../html/success.html',
-          signInOptions: [
-              firebase.auth.EmailAuthProvider.PROVIDER_ID
-          ]
-      };
-      // Start FirebaseUI with the configuration
-    }
-  });
+  ui.start('#firebaseui-auth-container', uiConfig);
 });
