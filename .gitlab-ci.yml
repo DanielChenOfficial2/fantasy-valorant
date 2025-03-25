@@ -5,7 +5,7 @@ before_script: []
 pages:
   stage: deploy
   script:
-    - ls -la website
+    - ls -la website/frontend
     - mkdir public
     - mv website/frontend /public
     - ls -la public
