@@ -6,7 +6,6 @@ pages:
   stage: deploy
   script:
     - ls -la website/frontend
-    - mkdir public
     - mv website/frontend /public
     - ls -la public
     - echo "The site will be deployed to $CI_PAGES_URL"
