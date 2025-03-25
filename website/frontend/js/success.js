@@ -13,12 +13,23 @@ window.addEventListener('load', () => {
   const app = firebase.initializeApp(firebaseConfig);
 
   // const analytics = getAnalytics(app);
-  
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  const username = urlParams.get('username');
-  console.log('username', username);
 
-  // Display the username on the page
-  document.getElementById("userDisplay").textContent = `Welcome ${username}!`;
+  // Check if the user is signed in
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      // User is signed in, display user information
+      const userInfo = `
+        <strong>User Info:</strong><br>
+        UID: ${user.uid}<br>
+        Email: ${user.email}<br>
+        Display Name: ${user.displayName || 'N/A'}<br>
+        Photo URL: <img src="${user.photoURL || 'https://www.gstatic.com/webp/gallery/1.jpg'}" alt="User Photo" width="50" />
+      `;
+      document.getElementById("userInfo").innerHTML = userInfo;
+    } else {
+      // User is not signed in, redirect back to login
+      // console.log("user not signed in")
+      window.location.href = "login.html";
+    }
+  });
 });
