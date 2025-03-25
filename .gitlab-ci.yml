@@ -5,9 +5,9 @@ before_script: []
 pages:
   stage: deploy
   script:
-    - ls -la
+    - ls -la website
     - mkdir public
-    - cp -r /website/frontend /public
+    - cp -r website/frontend /public
     - echo "The site will be deployed to $CI_PAGES_URL"
   artifacts:
     paths:
