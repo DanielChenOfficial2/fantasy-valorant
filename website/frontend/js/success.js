@@ -25,7 +25,7 @@ window.addEventListener('load', () => {
         Display Name: ${user.displayName || 'N/A'}<br>
         Photo URL: <img src="${user.photoURL || 'https://www.gstatic.com/webp/gallery/1.jpg'}" alt="User Photo" width="50" />
       `;
-      document.getElementById("userInfo").innerHTML = userInfo;
+      document.querySelector("#userInfo").innerHTML = userInfo;
     } else {
       // User is not signed in, redirect back to login
       // console.log("user not signed in")
@@ -33,3 +33,15 @@ window.addEventListener('load', () => {
     }
   });
 });
+
+// Bind logout event to logout button
+document.querySelector("#logout").addEventListener("click", logoutUser);
+
+function logoutUser() {
+  firebase.auth().signOut().then(() => {
+    // console.log("User logged out");
+    window.location.href = "login.html"; // Redirect to login page after logout
+  }).catch((error) => {
+    console.error("Error logging out:", error.message);
+  });
+}
