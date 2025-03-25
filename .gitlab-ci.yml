@@ -7,7 +7,7 @@ pages:
   script:
     - ls -la website
     - mkdir public
-    - cp -r website/frontend /public
+    - mv website/frontend /public
     - ls -la public
     - echo "The site will be deployed to $CI_PAGES_URL"
   artifacts:
