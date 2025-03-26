@@ -20,27 +20,45 @@ window.addEventListener('load', () => {
       // User is signed in, display user information
       const userInfo = `
         <strong>User Info:</strong><br>
-        UID: ${user.uid}<br>
-        Email: ${user.email}<br>
+        UID: ${user.uid || 'N/A'}<br>
+        Email: ${user.email || 'N/A'}<br>
         Display Name: ${user.displayName || 'N/A'}<br>
-        Photo URL: <img src="${user.photoURL || 'https://www.gstatic.com/webp/gallery/1.jpg'}" alt="User Photo" width="50" />
       `;
       document.querySelector("#userInfo").innerHTML = userInfo;
+      
+      // Initialize Cloud Firestore and get a reference to the service
+      const db = firebase.firestore();
+      db.collection("players").get().then((querySnapshot) => {
+        const playersInfo = document.querySelector("#playersInfo > tbody");
+        querySnapshot.forEach((doc) => {
+          console.log(doc.id, "=>", JSON.stringify(doc.data(), null, 2));
+          let playerData = doc.data();
+          let row = playersInfo.insertRow();
+          let playerName = row.insertCell(0);
+          playerName.innerHTML = doc.id; 
+          
+          let playerTeam = row.insertCell(1);
+          playerTeam.innerHTML = playerData['team'];
+          
+          let playerACS = row.insertCell(2);
+          playerACS.innerHTML = playerData['ACS'];
+        });
+      });
+
+      // Bind logout event to logout button
+      document.querySelector("#logout").addEventListener("click", logoutUser);
     } else {
       // User is not signed in, redirect back to login
       // console.log("user not signed in")
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     }
   });
 });
 
-// Bind logout event to logout button
-document.querySelector("#logout").addEventListener("click", logoutUser);
-
 function logoutUser() {
   firebase.auth().signOut().then(() => {
     // console.log("User logged out");
-    window.location.href = "login.html"; // Redirect to login page after logout
+    window.location.href = "index.html"; // Redirect to login page after logout
   }).catch((error) => {
     console.error("Error logging out:", error.message);
   });
