@@ -16,7 +16,7 @@ db = firestore.client()
 # think of the collection as the database and a document as an entry in that database
 # bunch of sample document setting
 doc_ref = db.collection("players").document("xenom")
-doc_ref.set({"name": "xenom", "team_abbrev": "MIBR", "agents": ['astra', 'viper'], "ACS": 231.5})
+doc_ref.set({"name": "xenom", "team": "MIBR", "agents": ['astra', 'viper'], "ACS": 231.5})
 
 doc_ref = db.collection("players").document("s0m")
 doc_ref.set({"name": "s0m", "team": "NRG", "agents": ['omen', 'brimstone', 'astra'], "ACS": 257.3})
