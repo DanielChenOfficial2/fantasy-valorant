@@ -28,20 +28,50 @@ window.addEventListener('load', () => {
       
       // Initialize Cloud Firestore and get a reference to the service
       const db = firebase.firestore();
-      db.collection("players").get().then((querySnapshot) => {
-        const playersInfo = document.querySelector("#playersInfo > tbody");
-        querySnapshot.forEach((doc) => {
+      const playersDb = db.collection("players");
+
+      playersDb.onSnapshot((querySnapshot) => {
+        querySnapshot.docChanges().forEach((change) => {
+          const doc = change.doc;
+          const playerData = doc.data();
           console.log(doc.id, "=>", JSON.stringify(doc.data(), null, 2));
-          let playerData = doc.data();
-          let row = playersInfo.insertRow();
-          let playerName = row.insertCell(0);
-          playerName.innerHTML = doc.id; 
-          
-          let playerTeam = row.insertCell(1);
-          playerTeam.innerHTML = playerData['team'];
-          
-          let playerACS = row.insertCell(2);
-          playerACS.innerHTML = playerData['ACS'];
+
+          // Note that relative to the first page load, all documents retrieved from
+          // the collection are considered to be "added"
+          if (change.type === "added") {
+            console.log("New player added:", doc.data());
+            const row = playersInfo.insertRow();
+            row.id = playerData['team'] + doc.id;
+
+            const playerName = row.insertCell(0);
+            playerName.innerHTML = doc.id; 
+            
+            const playerTeam = row.insertCell(1);
+            playerTeam.innerHTML = playerData['team'];
+            
+            const playerACS = row.insertCell(2);
+            playerACS.innerHTML = playerData['ACS'];
+          }
+          if (change.type === "modified") {
+            console.log("Player data modified:", doc.data());
+            const playerId = playerData['team'] + doc.id;
+            const playerRow = document.querySelector(`#${playerId}`);
+            
+            const playerName = playerRow.cells[0];
+            playerName.innerHTML = doc.id;
+
+            const playerTeam = playerRow.cells[1];
+            playerTeam.innerHTML = playerData['team'];
+
+            const playerACS = playerRow.cells[2];
+            playerACS.innerHTML = playerData['ACS'];
+          }
+          if (change.type === "removed") {
+            console.log("Player removed:", doc.data());
+            const playerId = playerData['team'] + doc.id;
+            const playerRow = document.querySelector(`#${playerId}`);
+            playerRow.remove();
+          }
         });
       });
 
