@@ -34,14 +34,14 @@ window.addEventListener('load', () => {
         querySnapshot.docChanges().forEach((change) => {
           const doc = change.doc;
           const playerData = doc.data();
-          console.log(doc.id, "=>", JSON.stringify(doc.data(), null, 2));
+          // console.log(doc.id, "=>", JSON.stringify(doc.data(), null, 2));
 
           // Note that relative to the first page load, all documents retrieved from
           // the collection are considered to be "added"
           if (change.type === "added") {
-            console.log("New player added:", doc.data());
+            console.log("New player added to server database:", doc.data());
             const row = playersInfo.insertRow();
-            row.id = playerData['team'] + doc.id;
+            row.id = playerData['team'] + "_" + doc.id;
 
             const playerName = row.insertCell(0);
             playerName.innerHTML = doc.id; 
@@ -51,11 +51,48 @@ window.addEventListener('load', () => {
             
             const playerACS = row.insertCell(2);
             playerACS.innerHTML = playerData['ACS'];
+
+            const addToRosterCell = row.insertCell(3);
+            const addToRosterButton = document.createElement("button");
+            addToRosterButton.innerHTML = "Add to Roster"
+            addToRosterButton.id = playerData['team'] + "_" + doc.id + "_addToRoster"
+            addToRosterButton.addEventListener("click", function() {
+            const playersDb = db.collection("players");
+            const regex = /_(.*?)_/;
+            const playerName = addToRosterButton.id.match(regex)[1];
+            const player = playersDb.doc(`${playerName}`);
+            const userDb = db.collection(`${user.uid}`);
+            const destPlayer = userDb.doc(`${playerName}`)
+            // Step 1: Get the data from the source document
+            player.get().then((docSnapshot) => {
+                if (docSnapshot.exists) {
+                    // Step 2: Write the data to the destination document
+                    destPlayer.set(docSnapshot.data())
+                        .then(() => {
+                            console.log('Document successfully transferred!');
+                            // Step 3: Optionally delete the source document
+                            return player.delete();
+                        })
+                        .then(() => {
+                            console.log('Source document deleted successfully!');
+                        })
+                        .catch((error) => {
+                            console.error('Error transferring document: ', error);
+                        });
+                } else {
+                    console.log('No document found in source collection.');
+                }
+            }).catch((error) => {
+                console.error('Error getting document: ', error);
+            });
+          })
+
+            addToRosterCell.append(addToRosterButton)
           }
           if (change.type === "modified") {
-            console.log("Player data modified:", doc.data());
-            const playerId = playerData['team'] + doc.id;
-            const playerRow = document.querySelector(`#${playerId}`);
+            console.log("Player data modified on server database:", doc.data());
+            const playerId = playerData['team'] + "_" + doc.id;
+            const playerRow = document.querySelector(`#playersInfo #${playerId}`);
             
             const playerName = playerRow.cells[0];
             playerName.innerHTML = doc.id;
@@ -67,9 +104,93 @@ window.addEventListener('load', () => {
             playerACS.innerHTML = playerData['ACS'];
           }
           if (change.type === "removed") {
-            console.log("Player removed:", doc.data());
-            const playerId = playerData['team'] + doc.id;
-            const playerRow = document.querySelector(`#${playerId}`);
+            console.log("Player removed from server database:", doc.data());
+            const playerId = playerData['team'] + "_" + doc.id;
+            const playerRow = document.querySelector(`#playersInfo #${playerId}`);
+            playerRow.remove();
+          }
+        });
+      });
+
+      const userDb = db.collection(`${user.uid}`);
+      userDb.onSnapshot((querySnapshot) => {
+        querySnapshot.docChanges().forEach((change) => {
+          const doc = change.doc;
+          const playerData = doc.data();
+          // console.log(doc.id, "=>", JSON.stringify(doc.data(), null, 2));
+
+          // Note that relative to the first page load, all documents retrieved from
+          // the collection are considered to be "added"
+          if (change.type === "added") {
+            console.log("New player added to user database:", doc.data());
+            const row = userPlayersInfo.insertRow();
+            row.id = playerData['team'] + "_" + doc.id;
+
+            const playerName = row.insertCell(0);
+            playerName.innerHTML = doc.id; 
+            
+            const playerTeam = row.insertCell(1);
+            playerTeam.innerHTML = playerData['team'];
+            
+            const playerACS = row.insertCell(2);
+            playerACS.innerHTML = playerData['ACS'];
+
+            const removeFromRosterCell = row.insertCell(3);
+            const removeFromRosterButton = document.createElement("button");
+            removeFromRosterButton.innerHTML = "Remove from Roster"
+            removeFromRosterButton.id = playerData['team'] + "_" + doc.id + "_removeFromRoster"
+            removeFromRosterButton.addEventListener("click", function() {
+            const userDb = db.collection(`${user.uid}`);
+            const regex = /_(.*?)_/;
+            const playerName = removeFromRosterButton.id.match(regex)[1];
+            const player = userDb.doc(`${playerName}`);
+            const playersDb = db.collection("players");
+            const destPlayer = playersDb.doc(`${playerName}`)
+            // Step 1: Get the data from the source document
+            player.get().then((docSnapshot) => {
+                if (docSnapshot.exists) {
+                    // Step 2: Write the data to the destination document
+                    destPlayer.set(docSnapshot.data())
+                        .then(() => {
+                            console.log('Document successfully transferred!');
+                            // Step 3: Optionally delete the source document
+                            return player.delete();
+                        })
+                        .then(() => {
+                            console.log('Source document deleted successfully!');
+                        })
+                        .catch((error) => {
+                            console.error('Error transferring document: ', error);
+                        });
+                } else {
+                    console.log('No document found in source collection.');
+                }
+            }).catch((error) => {
+                console.error('Error getting document: ', error);
+            });
+          })
+
+            removeFromRosterCell.append(removeFromRosterButton)
+          }
+          if (change.type === "modified") {
+            console.log("Player data modified on user database:", doc.data());
+            const playerId = playerData['team'] + "_" + doc.id;
+            const playerRow = document.querySelector(`#userPlayersInfo #${playerId}`);
+            
+            const playerName = playerRow.cells[0];
+            playerName.innerHTML = doc.id;
+
+            const playerTeam = playerRow.cells[1];
+            playerTeam.innerHTML = playerData['team'];
+
+            const playerACS = playerRow.cells[2];
+            playerACS.innerHTML = playerData['ACS'];
+          }
+          if (change.type === "removed") {
+            console.log("Player removed from user database:", doc.data());
+            const playerId = playerData['team'] + "_" + doc.id;
+            const playerRow = document.querySelector(`#userPlayersInfo #${playerId}`);
+            console.log(playerRow.parentElement.parentElement)
             playerRow.remove();
           }
         });
