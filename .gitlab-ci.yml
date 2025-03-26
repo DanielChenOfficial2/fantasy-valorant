@@ -5,8 +5,8 @@ before_script: []
 pages:
   stage: deploy
   script:
-    - ls -la website/frontend
-    - mv website/frontend public
+    - ls -la website
+    - mv website public
     - ls -la public
     - echo "The site will be deployed to $CI_PAGES_URL"
   artifacts:
@@ -16,4 +16,5 @@ pages:
   rules:
     # This ensures that only pushes to the production branch will trigger
     # a pages deploy
+    # there is some way to only use "prod" to do the same thing
     - if: $CI_COMMIT_REF_NAME == "prod"
