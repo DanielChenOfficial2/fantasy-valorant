@@ -28,8 +28,128 @@ window.addEventListener('load', () => {
       
       // Initialize Cloud Firestore and get a reference to the service
       const db = firebase.firestore();
-      const playersDb = db.collection("players");
 
+      const availableLeaguesDb = db.collection("fantasyleagues");
+      availableLeaguesDb.onSnapshot((querySnapshot) => {
+        querySnapshot.docChanges().forEach((change) => {
+          const doc = change.doc;
+          const availableLeagueData = doc.data();
+          
+          // Note that relative to the first page load, all documents retrieved from
+          // the collection are considered to be "added"
+          if (change.type === "added") {
+            console.log("New league added to fantasy leagues database:", doc.data());
+            
+            const leagueUserUIDs = availableLeagueData["userUIDs"];
+            if (leagueUserUIDs.includes(user.uid)) { // if user is in the league, show in "your leagues"
+              const row = userLeaguesInfo.insertRow();
+              row.id = doc.id;
+
+              const leagueName = row.insertCell(0);
+              leagueName.innerHTML = availableLeagueData["name"];
+              
+              const leagueNumUsers = row.insertCell(1);
+              leagueNumUsers.innerHTML = availableLeagueData["numUsers"];
+
+              const leaveLeagueCell = row.insertCell(2);
+              const leaveLeagueButton = document.createElement("button");
+              leaveLeagueButton.innerHTML = "Leave League"
+              leaveLeagueButton.id = doc.id + "_leaveLeague"
+              leaveLeagueButton.addEventListener("click", function() {
+                const newLeagueUserUIDs = availableLeagueData["userUIDs"].filter(item => item !== user.uid)
+                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
+              })
+
+              leaveLeagueCell.append(leaveLeagueButton);
+            }
+            else { // if user is not in the league, show in "available leagues"
+              const row = availableLeaguesInfo.insertRow();
+              row.id = doc.id;
+
+              const leagueName = row.insertCell(0);
+              leagueName.innerHTML = availableLeagueData["name"];
+              
+              const leagueNumUsers = row.insertCell(1);
+              leagueNumUsers.innerHTML = availableLeagueData["numUsers"];
+
+              const joinLeagueCell = row.insertCell(2);
+              const joinLeagueButton = document.createElement("button");
+              joinLeagueButton.innerHTML = "Join League"
+              joinLeagueButton.id = doc.id + "_joinLeague"
+              joinLeagueButton.addEventListener("click", function() {
+                availableLeagueData["userUIDs"].push(user.uid);
+                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+              })
+
+              joinLeagueCell.append(joinLeagueButton);
+            }
+          }
+          else if (change.type === "modified") {
+            // triggers when user joins/leaves league
+            // leaving the league is a particularly complicated process due to releasing all of user's players back into the pool
+            console.log("League modified in fantasy leagues database:", doc.data());
+
+            const leagueUserUIDs = availableLeagueData["userUIDs"];
+            if (leagueUserUIDs.includes(user.uid)) { // if user is in the league, show in "your leagues"
+              const availableLeaguesRow = document.getElementById(doc.id);
+              availableLeaguesRow.remove();
+
+              const row = userLeaguesInfo.insertRow();
+              row.id = doc.id;
+
+              const leagueName = row.insertCell(0);
+              leagueName.innerHTML = availableLeagueData["name"];
+              
+              const leagueNumUsers = row.insertCell(1);
+              leagueNumUsers.innerHTML = availableLeagueData["numUsers"];
+
+              const leaveLeagueCell = row.insertCell(2);
+              const leaveLeagueButton = document.createElement("button");
+              leaveLeagueButton.innerHTML = "Leave League"
+              leaveLeagueButton.id = doc.id + "_leaveLeague"
+              leaveLeagueButton.addEventListener("click", function() {
+                const newLeagueUserUIDs = availableLeagueData["userUIDs"].filter(item => item !== user.uid)
+                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
+              })
+
+              leaveLeagueCell.append(leaveLeagueButton);
+            }
+            else { // if user is not in the league, show in "available leagues"
+              const userLeaguesRow = document.getElementById(doc.id);
+              userLeaguesRow.remove();
+
+              const row = availableLeaguesInfo.insertRow();
+              row.id = doc.id;
+
+              const leagueName = row.insertCell(0);
+              leagueName.innerHTML = availableLeagueData["name"];
+              
+              const leagueNumUsers = row.insertCell(1);
+              leagueNumUsers.innerHTML = availableLeagueData["numUsers"];
+
+              const joinLeagueCell = row.insertCell(2);
+              const joinLeagueButton = document.createElement("button");
+              joinLeagueButton.innerHTML = "Join League"
+              joinLeagueButton.id = doc.id + "_joinLeague"
+              joinLeagueButton.addEventListener("click", function() {
+                availableLeagueData["userUIDs"].push(user.uid);
+                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+              })
+
+              joinLeagueCell.append(joinLeagueButton);
+            }
+          }
+          else if (change.type === "removed") {
+            // should probably never trigger
+            console.log("New league added to fantasy leagues database:", doc.data());
+          }
+          else {
+            console.error("unexpected change type for server database")
+          }
+        });
+      })
+
+      const playersDb = db.collection("players");
       playersDb.onSnapshot((querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const doc = change.doc;
@@ -57,39 +177,39 @@ window.addEventListener('load', () => {
             addToRosterButton.innerHTML = "Add to Roster"
             addToRosterButton.id = playerData['team'] + "_" + doc.id + "_addToRoster"
             addToRosterButton.addEventListener("click", function() {
-            const playersDb = db.collection("players");
-            const regex = /_(.*?)_/;
-            const playerName = addToRosterButton.id.match(regex)[1];
-            const player = playersDb.doc(`${playerName}`);
-            const userDb = db.collection(`${user.uid}`);
-            const destPlayer = userDb.doc(`${playerName}`)
-            // Step 1: Get the data from the source document
-            player.get().then((docSnapshot) => {
-                if (docSnapshot.exists) {
-                    // Step 2: Write the data to the destination document
-                    destPlayer.set(docSnapshot.data())
-                        .then(() => {
-                            console.log('Document successfully transferred!');
-                            // Step 3: Optionally delete the source document
-                            return player.delete();
-                        })
-                        .then(() => {
-                            console.log('Source document deleted successfully!');
-                        })
-                        .catch((error) => {
-                            console.error('Error transferring document: ', error);
-                        });
-                } else {
-                    console.log('No document found in source collection.');
-                }
-            }).catch((error) => {
-                console.error('Error getting document: ', error);
-            });
+              const playersDb = db.collection("players");
+              const regex = /_(.*?)_/;
+              const playerName = addToRosterButton.id.match(regex)[1];
+              const player = playersDb.doc(`${playerName}`);
+              const userDb = db.collection(`${user.uid}`);
+              const destPlayer = userDb.doc(`${playerName}`)
+              // Step 1: Get the data from the source document
+              player.get().then((docSnapshot) => {
+                  if (docSnapshot.exists) {
+                      // Step 2: Write the data to the destination document
+                      destPlayer.set(docSnapshot.data())
+                          .then(() => {
+                              console.log('Document successfully transferred!');
+                              // Step 3: Optionally delete the source document
+                              return player.delete();
+                          })
+                          .then(() => {
+                              console.log('Source document deleted successfully!');
+                          })
+                          .catch((error) => {
+                              console.error('Error transferring document: ', error);
+                          });
+                  } else {
+                      console.log('No document found in source collection.');
+                  }
+              }).catch((error) => {
+                  console.error('Error getting document: ', error);
+              });
           })
 
             addToRosterCell.append(addToRosterButton)
           }
-          if (change.type === "modified") {
+          else if (change.type === "modified") {
             console.log("Player data modified on server database:", doc.data());
             const playerId = playerData['team'] + "_" + doc.id;
             const playerRow = document.querySelector(`#playersInfo #${playerId}`);
@@ -103,11 +223,14 @@ window.addEventListener('load', () => {
             const playerACS = playerRow.cells[2];
             playerACS.innerHTML = playerData['ACS'];
           }
-          if (change.type === "removed") {
+          else if (change.type === "removed") {
             console.log("Player removed from server database:", doc.data());
             const playerId = playerData['team'] + "_" + doc.id;
             const playerRow = document.querySelector(`#playersInfo #${playerId}`);
             playerRow.remove();
+          }
+          else {
+            console.error("unexpected change type for server database")
           }
         });
       });
@@ -172,7 +295,7 @@ window.addEventListener('load', () => {
 
             removeFromRosterCell.append(removeFromRosterButton)
           }
-          if (change.type === "modified") {
+          else if (change.type === "modified") {
             console.log("Player data modified on user database:", doc.data());
             const playerId = playerData['team'] + "_" + doc.id;
             const playerRow = document.querySelector(`#userPlayersInfo #${playerId}`);
@@ -186,12 +309,15 @@ window.addEventListener('load', () => {
             const playerACS = playerRow.cells[2];
             playerACS.innerHTML = playerData['ACS'];
           }
-          if (change.type === "removed") {
+          else if (change.type === "removed") {
             console.log("Player removed from user database:", doc.data());
             const playerId = playerData['team'] + "_" + doc.id;
             const playerRow = document.querySelector(`#userPlayersInfo #${playerId}`);
             console.log(playerRow.parentElement.parentElement)
             playerRow.remove();
+          }
+          else {
+            console.error("unexpected change type for user database")
           }
         });
       });

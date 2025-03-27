@@ -33,6 +33,13 @@ const firebaseConfig = {
 
 ;
 window.addEventListener('load', () => {
+  // if user is logged in, direct to homepage
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      window.location.href = "success.html"
+    }
+  });
+
   // Initialize Firebase
   const app = firebase.initializeApp(firebaseConfig);
 
