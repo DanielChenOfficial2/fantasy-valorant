@@ -3,6 +3,7 @@ website/frontend/js/placeholder.js
 website/dist/
 
 backend/fantasy-valorant
+backend/default.sh
 
 package-lock.json
 package.json
