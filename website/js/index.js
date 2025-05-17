@@ -31,10 +31,14 @@ const firebaseConfig = {
   measurementId: "G-GK0SLGNZ1E"
 };
 
-;
+const app = firebase.initializeApp(firebaseConfig);
 window.addEventListener('load', () => {
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
+  // if user is logged in, direct to homepage
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+      window.location.href = "overview.html"
+    }
+  });
 
   // const analytics = getAnalytics(app);
 
@@ -56,7 +60,7 @@ window.addEventListener('load', () => {
     },
     // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
     signInFlow: 'popup',
-    signInSuccessUrl: 'success.html',
+    signInSuccessUrl: 'overview.html',
     signInOptions: [
       // r.e. email signin with email/password instead of email link:
       // https://github.com/firebase/firebaseui-web/issues/1040
