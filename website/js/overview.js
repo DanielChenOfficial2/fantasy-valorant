@@ -22,7 +22,7 @@ window.addEventListener('load', () => {
       // Initialize Cloud Firestore and get a reference to the service
       const db = firebase.firestore();
 
-      const availableLeaguesDb = db.collection("fantasyleagues");
+      const availableLeaguesDb = db.collection("fantasy_leagues");
       availableLeaguesDb.onSnapshot((querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const doc = change.doc;
@@ -32,7 +32,7 @@ window.addEventListener('load', () => {
           // the collection are considered to be "added"
           if (change.type === "added") {
             console.log("New league added to fantasy leagues database:", doc.data());
-            
+            console.log(availableLeagueData);
             const leagueUserUIDs = availableLeagueData["userUIDs"];
             if (leagueUserUIDs.includes(user.uid)) { // if user is in the league, show in "your leagues"
               const row = userLeaguesInfo.insertRow();
@@ -60,7 +60,7 @@ window.addEventListener('load', () => {
               // leaveLeagueButton.id = doc.id + "_leaveLeague"
               // leaveLeagueButton.addEventListener("click", function() {
               //   const newLeagueUserUIDs = availableLeagueData["userUIDs"].filter(item => item !== user.uid)
-              //   db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
+              //   db.collection("fantasy_leagues").doc("2025_americas_split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
               // })
 
               // leaveLeagueCell.append(leaveLeagueButton);
@@ -81,7 +81,7 @@ window.addEventListener('load', () => {
               joinLeagueButton.id = doc.id + "_joinLeague"
               joinLeagueButton.addEventListener("click", function() {
                 availableLeagueData["userUIDs"].push(user.uid);
-                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+                db.collection("fantasy_leagues").doc("2025_americas_split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
               })
 
               joinLeagueCell.append(joinLeagueButton);
@@ -112,7 +112,7 @@ window.addEventListener('load', () => {
               leaveLeagueButton.id = doc.id + "_leaveLeague"
               leaveLeagueButton.addEventListener("click", function() {
                 const newLeagueUserUIDs = availableLeagueData["userUIDs"].filter(item => item !== user.uid)
-                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
+                db.collection("fantasy_leagues").doc("2025_americas_split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
               })
 
               leaveLeagueCell.append(leaveLeagueButton);
@@ -136,7 +136,7 @@ window.addEventListener('load', () => {
               joinLeagueButton.id = doc.id + "_joinLeague"
               joinLeagueButton.addEventListener("click", function() {
                 availableLeagueData["userUIDs"].push(user.uid);
-                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+                db.collection("fantasy_leagues").doc("2025_americas_split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
               })
 
               joinLeagueCell.append(joinLeagueButton);

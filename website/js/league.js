@@ -21,7 +21,7 @@ const firebaseConfig = {
         const db = firebase.firestore();
         
         const leagueName = sessionStorage.getItem("name");
-        const playersDb = db.collection("fantasyleagues").doc(leagueName).collection("players");
+        const playersDb = db.collection("fantasy_leagues").doc(leagueName).collection("players");
         playersDb.onSnapshot((querySnapshot) => {
           querySnapshot.docChanges().forEach((change) => {
             const doc = change.doc;
@@ -45,10 +45,10 @@ const firebaseConfig = {
                 playerTeam.innerHTML = playerData['shorthandTeamName'];
                 
                 const playerRole = row.insertCell(2);
-                playerRole.innerHTML = "TBD";
+                playerRole.innerHTML = playerData["role"] ?? "undefined";
 
                 const playerAgents = row.insertCell(3);
-                playerAgents.innerHTML = playerData['agents'];
+                playerAgents.innerHTML = playerData['agents'].join(", ");
     
                 const addToRosterCell = row.insertCell(4);
                 const addToRosterButton = document.createElement("button");
