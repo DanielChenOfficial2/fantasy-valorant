@@ -18,14 +18,12 @@ db = firestore.client()
 
 # think of the collection as the database and a document as an entry in that database
 # bunch of sample document setting
-fantasy_league_name = "2025split1"
-fantasy_leagues_collection_ref = db.collection("fantasyleagues")
-# doc_ref = fantasy_leagues_collection_ref.document(fantasy_league_name)
-# doc_ref.set({"numUsers": 0, "name": "VCT 2025 Split 1 (Global)", "userUIDs": []})
+fantasy_league_name = "2025_americas_split1"
+fantasy_leagues_collection_ref = db.collection("fantasy_leagues")
+doc_ref = fantasy_leagues_collection_ref.document(fantasy_league_name)
+doc_ref.set({"numUsers": 0, "name": "VCT 2025 Split 1 (Americas)", "userUIDs": []})
 
-applicable_tournament_urls = ["https://www.vlr.gg/event/2347/champions-tour-2025-americas-stage-1",
-                              "https://www.vlr.gg/event/2379/champions-tour-2025-pacific-stage-1",
-                              "https://www.vlr.gg/event/2380/champions-tour-2025-emea-stage-1"]
+applicable_tournament_urls = ["https://www.vlr.gg/event/2347/champions-tour-2025-americas-stage-1"]
 playerInfoArr = []
 for applicable_tournament_url in applicable_tournament_urls:
     headers = {"User-Agent": "Mozilla/5.0"}
