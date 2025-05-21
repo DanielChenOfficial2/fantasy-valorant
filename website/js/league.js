@@ -1,12 +1,13 @@
 let sortDirection = 1;
 
-function sortTable(tableId, columnIndex) {
+function sortTable(tableId, columnIndex, toggleDirection) {
   const table = document.getElementById(`${tableId}`);
   const rows = Array.from(table.rows).slice(1); // Skip header row
   const tbody = table.tBodies[0];
 
   // Toggle sort direction
-  sortDirection = -sortDirection;
+  if (toggleDirection)
+    sortDirection = -sortDirection;
 
   rows.sort((a, b) => {
     let cellA = a.cells[columnIndex].innerText;
@@ -46,13 +47,13 @@ window.addEventListener('load', () => {
   let playersInfoCols = document.querySelectorAll("table#playersInfo th")
   for (let i = 0; i < playersInfoCols.length - 1; i++) {
     let curPlayerInfoCol = playersInfoCols[i];
-    curPlayerInfoCol.addEventListener("click", () => sortTable("playersInfo", `${i}`));
+    curPlayerInfoCol.addEventListener("click", () => sortTable("playersInfo", `${i}`, true));
   }
 
   let userPlayersInfoCols = document.querySelectorAll("table#userPlayersInfo th")
   for (let i = 0; i < userPlayersInfoCols.length - 1; i++) {
     let curPlayerInfoCol = userPlayersInfoCols[i];
-    curPlayerInfoCol.addEventListener("click", () => sortTable("userPlayersInfo", `${i}`));
+    curPlayerInfoCol.addEventListener("click", () => sortTable("userPlayersInfo", `${i}`, true));
   }
   
   // Initialize Firebase
@@ -105,6 +106,8 @@ window.addEventListener('load', () => {
                   playersDb.doc(doc.id).update({"owner": user.uid});
               })
               addToRosterCell.append(addToRosterButton);
+
+              sortTable("playersInfo", 0, sortDirection !== 1);
             }
             else if (playerData["owner"] === user.uid) {
               const row = userPlayersInfo.insertRow();
@@ -131,6 +134,8 @@ window.addEventListener('load', () => {
                   playersDb.doc(doc.id).update({"owner": null});
               })
               removeFromRosterCell.append(removeFromRosterButton);
+
+              sortTable("userPlayersInfo", 0, sortDirection !== 1);
             }
           }
           else if (change.type === "modified") {
@@ -170,6 +175,8 @@ window.addEventListener('load', () => {
                   playersDb.doc(doc.id).update({"owner": user.uid});
               })
               addToRosterCell.append(addToRosterButton);
+
+              sortTable("playersInfo", 0, sortDirection !== 1);
             }
             else if (playerData["owner"] === user.uid) {
               const row = userPlayersInfo.insertRow();
@@ -196,6 +203,8 @@ window.addEventListener('load', () => {
                   playersDb.doc(doc.id).update({"owner": null});
               })
               removeFromRosterCell.append(removeFromRosterButton);
+
+              sortTable("userPlayersInfo", 0, sortDirection !== 1);
             }
           }
           else if (change.type === "removed") {
