@@ -41,9 +41,10 @@ const firebaseConfig = {
     measurementId: "G-GK0SLGNZ1E"
   };
 
-
-  
 window.addEventListener('load', () => {
+  let leagueHeader = document.querySelector("#leagueHeader");
+  leagueHeader.innerHTML = sessionStorage.getItem("name");
+  
   let playersInfoCols = document.querySelectorAll("table#playersInfo th")
   for (let i = 0; i < playersInfoCols.length - 1; i++) {
     let curPlayerInfoCol = playersInfoCols[i];
@@ -67,7 +68,7 @@ window.addEventListener('load', () => {
       // Initialize Cloud Firestore and get a reference to the service
       const db = firebase.firestore();
       
-      const leagueName = sessionStorage.getItem("name");
+      const leagueName = sessionStorage.getItem("shorthandName");
       const playersDb = db.collection("fantasy_leagues").doc(leagueName).collection("players");
       playersDb.onSnapshot((querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
@@ -92,10 +93,12 @@ window.addEventListener('load', () => {
               playerTeam.innerHTML = playerData['shorthandTeamName'];
               
               const playerRole = row.insertCell(2);
-              playerRole.innerHTML = playerData["role"] ?? "undefined";
+              playerRole.innerHTML = playerData['role'] ?? "TBD";
 
               const playerAgents = row.insertCell(3);
-              playerAgents.innerHTML = playerData['agents'].join(", ");
+              playerAgents.innerHTML = playerData['agents'] !== undefined
+                                       ? playerData['agents'].join(", ")
+                                       : "N/A";
   
               const addToRosterCell = row.insertCell(4);
               const addToRosterButton = document.createElement("button");
@@ -120,10 +123,12 @@ window.addEventListener('load', () => {
               playerTeam.innerHTML = playerData['shorthandTeamName'];
               
               const playerRole = row.insertCell(2);
-              playerRole.innerHTML = "TBD";
+              playerRole.innerHTML = playerData['role'] ?? "TBD";
 
               const playerAgents = row.insertCell(3);
-              playerAgents.innerHTML = playerData['agents'];
+              playerAgents.innerHTML = playerData['agents'] !== undefined
+                                       ? playerData['agents'].join(", ")
+                                       : "N/A";
   
               const removeFromRosterCell = row.insertCell(4);
               const removeFromRosterButton = document.createElement("button");
@@ -161,10 +166,12 @@ window.addEventListener('load', () => {
               playerTeam.innerHTML = playerData['shorthandTeamName'];
               
               const playerRole = row.insertCell(2);
-              playerRole.innerHTML = "TBD";
+              playerRole.innerHTML = playerData['role'] ?? "TBD";
 
               const playerAgents = row.insertCell(3);
-              playerAgents.innerHTML = playerData['agents'];
+              playerAgents.innerHTML = playerData['agents'] !== undefined
+                                       ? playerData['agents'].join(", ")
+                                       : "N/A";
   
               const addToRosterCell = row.insertCell(4);
               const addToRosterButton = document.createElement("button");
@@ -189,10 +196,12 @@ window.addEventListener('load', () => {
               playerTeam.innerHTML = playerData['shorthandTeamName'];
               
               const playerRole = row.insertCell(2);
-              playerRole.innerHTML = "TBD";
+              playerRole.innerHTML = playerData['role'] ?? "TBD";
 
               const playerAgents = row.insertCell(3);
-              playerAgents.innerHTML = playerData['agents'];
+              playerAgents.innerHTML = playerData['agents'] !== undefined
+                                       ? playerData['agents'].join(", ")
+                                       : "N/A";
   
               const removeFromRosterCell = row.insertCell(4);
               const removeFromRosterButton = document.createElement("button");

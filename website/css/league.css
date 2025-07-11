@@ -34,3 +34,7 @@ main {
   flex-direction: row;
   gap: 10vw;
 }
+
+h1 {
+    text-align: center;
+}

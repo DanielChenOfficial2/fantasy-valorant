@@ -80,8 +80,14 @@ player_roles = {
     "trent": "Initiator",
     "JonahP": "Initiator",
     "valyn": "Smokes",
-    "leaf": "Sentinel"
+    "leaf": "Sentinel",
     # end G2
+    # start LOUD
+    "pANcada": "Smokes",
+    "Virtyy": "",
+    "RobbieBk": "",
+    "cauanzin": "Initiator",
+    # end LOUD
 }
 
 # Application Default credentials are automatically created (with above gcloud commands)

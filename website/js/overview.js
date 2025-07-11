@@ -51,7 +51,8 @@ window.addEventListener('load', () => {
               viewLeagueDetailsButton.innerHTML = "View League Details"
               viewLeagueDetailsButton.id = doc.id + "_viewLeagueDetails"
               viewLeagueDetailsButton.addEventListener("click", function() {
-                sessionStorage.setItem("name", `${row.id}`);
+                sessionStorage.setItem("shorthandName", `${row.id}`);
+                sessionStorage.setItem("name", availableLeagueData["name"]);
                 window.location.href = "league.html";
               })
               viewLeagueDetailsCell.append(viewLeagueDetailsButton);
@@ -114,7 +115,8 @@ window.addEventListener('load', () => {
               viewLeagueDetailsButton.innerHTML = "View League Details"
               viewLeagueDetailsButton.id = doc.id + "_viewLeagueDetails"
               viewLeagueDetailsButton.addEventListener("click", function() {
-                sessionStorage.setItem("name", `${row.id}`);
+                sessionStorage.setItem("shorthandName", `${row.id}`);
+                sessionStorage.setItem("name", availableLeagueData["name"]);
                 window.location.href = "league.html";
               })
               viewLeagueDetailsCell.append(viewLeagueDetailsButton);
