@@ -4,6 +4,7 @@ website/dist/
 
 backend/fantasy-valorant
 backend/default.sh
+backend/venv
 
 package-lock.json
 package.json
