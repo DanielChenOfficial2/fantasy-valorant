@@ -7,48 +7,6 @@ from bs4 import BeautifulSoup
 from google.api_core.exceptions import NotFound
 
 player_roles = {
-    # start 100T
-    "Cryocells": "Duelist",
-    "eeiu": "Initiator",
-    "zander": "Smokes",
-    "Boostio": "Sentinel",
-    "Asuna": "Flex",
-    # end 100T
-    # start FURIA
-    "Loss": "Duelist",
-    "woddy": "Initiator",
-    "tuyz": "Smokes",
-    "heat": "Sentinel",
-    "Urango": "Flex",
-    # end FURIA
-    # start LEV
-    "Sato": "Duelist",
-    "C0M": "Initiator",
-    "kiNgg": "Smokes",
-    "tex": "Sentinel",
-    "Okeanos": "Flex",
-    # end LEV
-    # start NRG
-    "mada": "Duelist",
-    "brawk": "Initiator",
-    "skuba": "Smokes",
-    "s0m": "Sentinel",
-    "Ethan": "Flex",
-    # end NRG
-    # start C9
-    "OXY": "Duelist",
-    "Xeppaa": "Initiator",
-    "v1c": "Smokes",
-    "neT": "Sentinel",
-    "mitch": "Flex",
-    # end C9
-    # start 2G
-    "gobera": "Duelist",
-    "pryze": "Initiator",
-    "lz": "Smokes",
-    "jayp": "Sentinel",
-    "silentzz": "Flex",
-    # end 2G
     # start MIBR
     "aspas": "Duelist",
     "Verno": "Initiator",
@@ -56,20 +14,6 @@ player_roles = {
     "cortezia": "Sentinel",
     "artzin": "Flex",
     # end MIBR
-    # start EG
-    "icy": "Duelist",
-    "Derrek": "Initiator",
-    "NaturE": "Initiator",
-    "supamen": "Smokes",
-    "yay": "Flex",
-    # end EG
-    # start KRU
-    "keznit": "Duelist",
-    "adverso": "Initiator",
-    "Melser": "Smokes",
-    "Shyy": "Sentinel",
-    "Mazino": "Flex",
-    # end KRU
     # start SEN
     "zekken": "Duelist",
     "johnqt": "Initiator",
@@ -77,13 +21,47 @@ player_roles = {
     "bang": "Smokes",
     "Zellsis": "Sentinel",
     # end SEN
-    # start G2
-    "jawgemo": "Duelist",
-    "trent": "Initiator",
-    "JonahP": "Initiator",
-    "valyn": "Smokes",
-    "leaf": "Sentinel"
-    # end G2
+    # start BLG
+    "whzy": "Duelist",
+    "Knight": "Initiator",
+    "nephh": "Initiator",
+    "rushia": "Smokes",
+    "Levius": "Sentinel",
+    # end BLG
+    # start Wolves
+    "Juicy": "Duelist",
+    "SiuFatBB": "Initiator",
+    "Spring": "Smokes",
+    "Lysoar": "Sentinel",
+    "Yuicaw": "Flex",
+    # end Wolves
+    # start GENG
+    "t3xture": "Duelist",
+    "Ash": "Initiator",
+    "Karon": "Smokes",
+    "Foxy9": "Sentinel",
+    "Munchkin": "Flex",
+    # end GENG
+    # start PRX
+    "s0mething": "Duelist",
+    "Jinggg": "Duelist",
+    "PatMen": "Initiator",
+    "d4v41": "Sentinel",
+    "f0rsakeN": "Flex",
+    # end PRX
+    # start TH
+    "MiniBoo": "Duelist",
+    "RieNs": "Initiator",
+    "Boo": "Smokes",
+    "benjyfishy": "Sentinel",
+    "Wo0t": "Flex",
+    # end TH
+    # start TL
+    "kamo": "Duelist",
+    "paTiTek": "Initiator",
+    "Serial": "Sentinel",
+    "Keiko": "Flex",
+    "Wo0t": "Flex",
 }
 
 # Application Default credentials are automatically created (with above gcloud commands)
@@ -93,10 +71,13 @@ db = firestore.client()
 
 # think of the collection as the database and a document as an entry in that database
 # bunch of sample document setting
-fantasy_league_name = "2025_americas_split1"
+fantasy_league_name = "2025_toronto_groups"
 fantasy_leagues_collection_ref = db.collection("fantasy_leagues")
 
-applicable_tournament_urls = ["https://www.vlr.gg/event/stats/2347/champions-tour-2025-americas-stage-1?exclude=&min_rounds=0&agent=all"]
+applicable_tournament_urls = ["https://www.vlr.gg/event/stats/2347/champions-tour-2025-americas-stage-1?exclude=29969.29970.29971.29972.29973&min_rounds=0&agent=all",
+                              "https://www.vlr.gg/event/stats/2380/champions-tour-2025-emea-stage-1?exclude=29986.29987.29988.29989.29990&min_rounds=0&agent=all",
+                              "https://www.vlr.gg/event/stats/2379/champions-tour-2025-pacific-stage-1?exclude=29912.29913.29914.29915.29916&min_rounds=0&agent=all",
+                              "https://www.vlr.gg/event/stats/2359/champions-tour-2025-china-stage-1?exclude=29562.29563.29564.29565.29566&min_rounds=0&agent=all"]
 
 for applicable_tournament_url in applicable_tournament_urls:
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -104,8 +85,21 @@ for applicable_tournament_url in applicable_tournament_urls:
     soup = BeautifulSoup(response.content, "html.parser")
     player_stats_rows = soup.select("table.wf-table.mod-stats.mod-scroll tbody tr")
     # print(player_stats_rows)
+    eligible_players = {"johnqt", "N4RRATE", "bang", "Zellsis", "zekken",
+                        "artzin", "xenom", "cortezia", "Verno", "aspas",
+                        "whzy", "Levius", "rushia", "nephh", "Knight",
+                        "Spring", "Lysoar", "Yuicaw", "Juicy", "SiuFatBB",
+                        "Munchkin", "Foxy9", "Ash", "t3xture", "Karon",
+                        "Jinggg", "f0rsakeN", "d4v41", "something", "PatMen",
+                        "Boo", "MiniBoo", "Wo0t", "RieNs", "benjyfishy",
+                        "nAts", "paTiTek", "Keiko", "kamo", "Serial"}
+    
     for player_stats_row in player_stats_rows:
         player_name = player_stats_row.select_one("div.text-of").text.strip()
+        
+        if player_name not in eligible_players:
+            continue
+
         player_shorthandTeamName = player_stats_row.select_one("div.stats-player-country").text.strip()
         player_role = player_roles.get(player_name, None)
         

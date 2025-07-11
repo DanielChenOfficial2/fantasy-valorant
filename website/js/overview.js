@@ -8,6 +8,8 @@ const firebaseConfig = {
   measurementId: "G-GK0SLGNZ1E"
 };
 
+const FANTASY_LEAGUES_COLLECTION_STRING = "fantasy_leagues";
+
 window.addEventListener('load', () => {
   // Initialize Firebase
   const app = firebase.initializeApp(firebaseConfig);
@@ -22,7 +24,7 @@ window.addEventListener('load', () => {
       // Initialize Cloud Firestore and get a reference to the service
       const db = firebase.firestore();
 
-      const availableLeaguesDb = db.collection("fantasyleagues");
+      const availableLeaguesDb = db.collection(FANTASY_LEAGUES_COLLECTION_STRING);
       availableLeaguesDb.onSnapshot((querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           const doc = change.doc;
@@ -32,7 +34,7 @@ window.addEventListener('load', () => {
           // the collection are considered to be "added"
           if (change.type === "added") {
             console.log("New league added to fantasy leagues database:", doc.data());
-            
+            console.log(availableLeagueData);
             const leagueUserUIDs = availableLeagueData["userUIDs"];
             if (leagueUserUIDs.includes(user.uid)) { // if user is in the league, show in "your leagues"
               const row = userLeaguesInfo.insertRow();
@@ -60,7 +62,7 @@ window.addEventListener('load', () => {
               // leaveLeagueButton.id = doc.id + "_leaveLeague"
               // leaveLeagueButton.addEventListener("click", function() {
               //   const newLeagueUserUIDs = availableLeagueData["userUIDs"].filter(item => item !== user.uid)
-              //   db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
+              //   db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc("2025_americas_split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
               // })
 
               // leaveLeagueCell.append(leaveLeagueButton);
@@ -80,8 +82,9 @@ window.addEventListener('load', () => {
               joinLeagueButton.innerHTML = "Join League"
               joinLeagueButton.id = doc.id + "_joinLeague"
               joinLeagueButton.addEventListener("click", function() {
+                const fantasyLeagueName = this.id.substring(0, this.id.indexOf("_joinLeague"));
                 availableLeagueData["userUIDs"].push(user.uid);
-                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+                db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc(fantasyLeagueName).update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
               })
 
               joinLeagueCell.append(joinLeagueButton);
@@ -105,17 +108,28 @@ window.addEventListener('load', () => {
               
               const leagueNumUsers = row.insertCell(1);
               leagueNumUsers.innerHTML = availableLeagueData["numUsers"];
-
-              const leaveLeagueCell = row.insertCell(2);
-              const leaveLeagueButton = document.createElement("button");
-              leaveLeagueButton.innerHTML = "Leave League"
-              leaveLeagueButton.id = doc.id + "_leaveLeague"
-              leaveLeagueButton.addEventListener("click", function() {
-                const newLeagueUserUIDs = availableLeagueData["userUIDs"].filter(item => item !== user.uid)
-                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
+              
+              const viewLeagueDetailsCell = row.insertCell(2);
+              const viewLeagueDetailsButton = document.createElement("button");
+              viewLeagueDetailsButton.innerHTML = "View League Details"
+              viewLeagueDetailsButton.id = doc.id + "_viewLeagueDetails"
+              viewLeagueDetailsButton.addEventListener("click", function() {
+                sessionStorage.setItem("name", `${row.id}`);
+                window.location.href = "league.html";
               })
+              viewLeagueDetailsCell.append(viewLeagueDetailsButton);
 
-              leaveLeagueCell.append(leaveLeagueButton);
+              // const leaveLeagueCell = row.insertCell(2);
+              // const leaveLeagueButton = document.createElement("button");
+              // leaveLeagueButton.innerHTML = "Leave League"
+              // leaveLeagueButton.id = doc.id + "_leaveLeague"
+              // leaveLeagueButton.addEventListener("click", function() {
+              //   const fantasyLeagueName = this.id.substring(0, this.id.indexOf("_leaveLeague"));
+              //   const newLeagueUserUIDs = availableLeagueData["userUIDs"].filter(item => item !== user.uid)
+              //   db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc(fantasyLeagueName).update({"numUsers": availableLeagueData["numUsers"] - 1, "userUIDs": newLeagueUserUIDs})
+              // })
+
+              // leaveLeagueCell.append(leaveLeagueButton);
             }
             else { // if user is not in the league, show in "available leagues"
               const userLeaguesRow = document.getElementById(doc.id);
@@ -135,8 +149,9 @@ window.addEventListener('load', () => {
               joinLeagueButton.innerHTML = "Join League"
               joinLeagueButton.id = doc.id + "_joinLeague"
               joinLeagueButton.addEventListener("click", function() {
+                const fantasyLeagueName = this.id.substring(0, this.id.indexOf("_joinLeague"));
                 availableLeagueData["userUIDs"].push(user.uid);
-                db.collection("fantasyleagues").doc("2025split1").update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+                db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc(fantasyLeagueName).update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
               })
 
               joinLeagueCell.append(joinLeagueButton);
@@ -144,7 +159,7 @@ window.addEventListener('load', () => {
           }
           else if (change.type === "removed") {
             // should probably never trigger
-            console.log("New league added to fantasy leagues database:", doc.data());
+            console.log("New league removed from fantasy leagues database:", doc.data());
           }
           else {
             console.error("unexpected change type for server database")
