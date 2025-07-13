@@ -34,3 +34,7 @@ main {
   flex-direction: row;
   gap: 10vw;
 }
+
+h2#draftHeader {
+  text-decoration: underline;
+}
