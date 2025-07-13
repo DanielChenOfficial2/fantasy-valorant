@@ -85,7 +85,8 @@ window.addEventListener('load', () => {
               joinLeagueButton.addEventListener("click", function() {
                 const fantasyLeagueName = this.id.substring(0, this.id.indexOf("_joinLeague"));
                 availableLeagueData["userUIDs"].push(user.uid);
-                db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc(fantasyLeagueName).update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+                availableLeagueData["userNames"].push(user.displayName.split(" ")[0]);
+                db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc(fantasyLeagueName).update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"], "userNames": availableLeagueData["userNames"]})
               })
 
               joinLeagueCell.append(joinLeagueButton);
@@ -153,7 +154,8 @@ window.addEventListener('load', () => {
               joinLeagueButton.addEventListener("click", function() {
                 const fantasyLeagueName = this.id.substring(0, this.id.indexOf("_joinLeague"));
                 availableLeagueData["userUIDs"].push(user.uid);
-                db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc(fantasyLeagueName).update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"]})
+                availableLeagueData["userNames"].push(user.displayName.split(" ")[0]);
+                db.collection(FANTASY_LEAGUES_COLLECTION_STRING).doc(fantasyLeagueName).update({"numUsers": availableLeagueData["numUsers"] + 1, "userUIDs": availableLeagueData["userUIDs"], "userNames": availableLeagueData["userNames"]})
               })
 
               joinLeagueCell.append(joinLeagueButton);

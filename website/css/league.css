@@ -35,6 +35,6 @@ main {
   gap: 10vw;
 }
 
-h1 {
-    text-align: center;
+h2#draftHeader {
+  text-decoration: underline;
 }

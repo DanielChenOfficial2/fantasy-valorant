@@ -25,7 +25,7 @@ db = firestore.client()
 fantasy_league_name = "2025_americas_split2"
 fantasy_leagues_collection_ref = db.collection("fantasy_leagues")
 doc_ref = fantasy_leagues_collection_ref.document(fantasy_league_name)
-doc_ref.set({"numUsers": 0, "name": "VCT 2025: Americas Stage 2 (Group Stage)", "userUIDs": []})
+doc_ref.set({"numUsers": 0, "name": "VCT 2025: Americas Stage 2 (Group Stage)", "userUIDs": [], "userNames": [], "draftStarted": 0, "draftEnded": 0, "owner": "P0b2dX6FAeeTfeFIEDz7SNlwz4H2", "rosterLimit": 8})
 
 applicable_tournament_urls = ["https://www.vlr.gg/event/2501/vct-2025-americas-stage-2"]
 playerInfoArr = []
