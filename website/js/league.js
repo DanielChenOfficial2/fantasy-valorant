@@ -236,6 +236,14 @@ window.addEventListener('load', () => {
             // smart solution: store owners of all players in localStorage, only delete and re-insert if necessary
             console.log("Player data modified on server database:", doc.data());
             
+            const totalRows = document.querySelectorAll("#userPlayersInfo tr").length;
+            if (totalRows === 8) {
+              document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = true);
+            }
+            else {
+              document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = false);
+            }
+
             // delete old row
             const playerId = "_" + playerData['shorthandTeamName'] + "_" + doc.id;
             console.log(playerId);
