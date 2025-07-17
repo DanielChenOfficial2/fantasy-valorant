@@ -153,8 +153,8 @@ function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDoc
   if (needsAddToRosterFunc) {
     const addToRosterCell = row.insertCell(4);
     const addToRosterButton = document.createElement("button");
-    addToRosterButton.innerHTML = "Add to Roster"
-    addToRosterButton.id = playerData['shorthandTeamName'] + "_" + docID + "_addToRoster"
+    addToRosterButton.innerHTML = "Add to Roster";
+    addToRosterButton.id = playerData['shorthandTeamName'] + "_" + docID + "_addToRoster";
     addToRosterButton.classList.add("add_to_roster");
 
     addToRosterButton.addEventListener("click", async function () {
@@ -167,23 +167,45 @@ function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDoc
         if (!leagueDoc.exists) return;
         const data = leagueDoc.data();
         if (!data.draftStarted) return;
+        document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = true);
         handleDraftPick(data, leagueDocRef, docID, userUID);
       } 
       catch (error) {
         console.error("Error handling draft pick:", error);
       }
     });
+
+    leagueDocRef.get().then((leagueDoc) => {
+      const totalRows = document.querySelectorAll("#userPlayersTable_curUser tr").length;
+      if (totalRows === leagueDoc.data().rosterLimit + 1) {
+        document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = true);
+      }
+    }).catch((error) => {
+      console.error("Error getting document:", error);
+    });
+
     addToRosterCell.append(addToRosterButton);
   }
   else if (needsRemoveFromRosterFunc) {
     const removeFromRosterCell = row.insertCell(4);
     const removeFromRosterButton = document.createElement("button");
-    removeFromRosterButton.innerHTML = "Remove from Roster"
-    removeFromRosterButton.id = playerData['shorthandTeamName'] + "_" + docID + "_removeFromRoster"
+    removeFromRosterButton.innerHTML = "Remove from Roster";
+    removeFromRosterButton.id = playerData['shorthandTeamName'] + "_" + docID + "_removeFromRoster";
+    removeFromRosterButton.classList.add("remove_from_roster");
     removeFromRosterButton.addEventListener("click", function() {
       // if the player doesn't currently have an owner, change the owner to this user
       playersDb.doc(docID).update({"owner": null});
-    })
+      document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = false);
+      hideElementByID("rosterLimitHit");
+    });
+
+    leagueDocRef.get().then((leagueDoc) => {
+      if (leagueDoc.data().draftStarted)
+        removeFromRosterButton.disabled = true;
+    }).catch((error) => {
+      console.error("Error getting document:", error);
+    });
+    
     removeFromRosterCell.append(removeFromRosterButton);
   }
 
@@ -193,8 +215,14 @@ function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDoc
 // helper function for initPlayersCollectionListener()
 function enforceRosterLimit(rosterLimit) {
   const totalRows = document.querySelectorAll("#userPlayersTable_curUser tr").length;
-  if (totalRows === rosterLimit + 1)
+  if (totalRows === rosterLimit + 1) {
     document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = true);
+    showElementByID("rosterLimitHit");
+  }  
+  else {
+    // document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = false);
+    hideElementByID("rosterLimitHit");
+  }
 }
 
 // helper function for initLeagueCollectionListener()
@@ -204,6 +232,10 @@ function renderOtherUserTables(allUserNames, allUserUIDs, curUserUID) {
     const userUID = allUserUIDs[i];
     
     if (userUID !== curUserUID) { // another user
+      if (document.querySelector(`#userPlayersTable_${userUID}`)) {
+        return;
+      }
+      
       const section = document.createElement("section");
 
       const heading = document.createElement("h2");
@@ -239,7 +271,10 @@ function handleDraftStarted(doc, lastDraftedHeader, draftHeader, userUID) {
   const curRound = doc.data().draftRound;
   const curDraftTurn = doc.data().draftTurn;
   const numUsers = doc.data().numUsers;
-      
+  
+  console.log("remove buttons disabled")
+  document.querySelectorAll("button.remove_from_roster").forEach(btn => btn.disabled = true);
+  
   if (curRound !== 1 || curDraftTurn !== 1)
     lastDraftedHeader.innerHTML = `${doc.data().lastDraftedUserName} picked ${doc.data().lastDraftedPlayer}.`;
   else
@@ -267,7 +302,7 @@ function handleDraftStarted(doc, lastDraftedHeader, draftHeader, userUID) {
 function handleDraftEnded(lastDraftedHeader, draftHeader) {
   lastDraftedHeader.innerHTML = ``;
   draftHeader.innerHTML = `Draft Has Ended`;
-  document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = false);
+  document.querySelectorAll("button.remove_from_roster").forEach(btn => btn.disabled = false);
 }
 
 // helper function for initLeagueCollectionListener()
@@ -430,6 +465,16 @@ function sortTable(tableId, columnIndex, toggleDirection) {
 // general helper function
 function removeElementById(id) {
   document.querySelector(`#${id}`).remove();
+}
+
+// general helper function
+function showElementByID(id) {
+  document.querySelector(`#${id}`).classList.remove("hidden");
+}
+
+// general helper function
+function hideElementByID(id) {
+    document.querySelector(`#${id}`).classList.add("hidden");
 }
 
 window.addEventListener('load', () => {

@@ -38,3 +38,11 @@ main {
 h2#draftHeader {
   text-decoration: underline;
 }
+
+h2#rosterLimitHit {
+  text-decoration: underline;
+}
+
+.hidden {
+  display: none;
+}
