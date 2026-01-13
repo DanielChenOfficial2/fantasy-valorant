@@ -30,5 +30,5 @@ db = firestore.client()
 
 # think of the collection as the database and a document as an entry in that database
 # bunch of sample document setting
-fantasy_leagues_collection_ref = db.collection("fantasy_leagues").document("2025_americas_split1").collection("players")
+fantasy_leagues_collection_ref = db.collection("fantasy_leagues").document("2026_americas_kickoff").collection("players")
 delete_collection(fantasy_leagues_collection_ref)
