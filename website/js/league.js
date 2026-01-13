@@ -38,18 +38,17 @@ function initPlayersCollectionListener(db, leagueName, userUID) {
         // console.log("New player added to server database:", doc.data());
         if (playerData["owner"] === null) // if player does not belong to anyone, add to available players
           appendPlayerRowToTable("playersTable", playersDb, playerData, leagueDocRef, doc.id, userUID, true, false);
-        else if (playerData["owner"] === userUID) { // player belongs to current user
-          appendPlayerRowToTable("userPlayersTable_curUser", playersDb, playerData, leagueDocRef, doc.id, userUID, false, true);
+        else {
+          appendPlayerRowToTable(`userPlayersTable_${playerData["owner"]}`, playersDb, playerData, leagueDocRef, doc.id, userUID, false, true);
           
-          leagueDocRef.get().then((leagueDoc) => {
-            enforceRosterLimit(leagueDoc.data().rosterLimit);
-          }).catch((error) => {
-            console.error("Error getting document:", error);
-          });
+          if (playerData["owner"] === userUID) { // player belongs to current user
+            leagueDocRef.get().then((leagueDoc) => {
+              enforceRosterLimit(leagueDoc.data().rosterLimit, userUID);
+            }).catch((error) => {
+              console.error("Error getting document:", error);
+            });
+          }
         }
-        else { // player belongs to another user
-          appendPlayerRowToTable(`userPlayersTable_${playerData["owner"]}`, playersDb, playerData, leagueDocRef, doc.id, userUID, false, false);
-        }    
       }
       else if (change.type === "modified") {
         // will proc on stat updates, if a user took a player, etc.
@@ -63,16 +62,15 @@ function initPlayersCollectionListener(db, leagueName, userUID) {
         if (playerData["owner"] === null) // if player does not belong to anyone, add to available players
           appendPlayerRowToTable("playersTable", playersDb, playerData, leagueDocRef, doc.id, userUID, true, false);
         else if (playerData["owner"] === userUID) { // player belongs to current user
-          appendPlayerRowToTable("userPlayersTable_curUser", playersDb, playerData, leagueDocRef, doc.id, userUID, false, true);
-        
-          leagueDocRef.get().then((leagueDoc) => {
-            enforceRosterLimit(leagueDoc.data().rosterLimit);
-          }).catch((error) => {
-            console.error("Error getting document:", error);
-          });
-        }
-        else { // player belongs to another user
-          appendPlayerRowToTable(`userPlayersTable_${playerData["owner"]}`, playersDb, playerData, leagueDocRef, doc.id, userUID, false, false);
+          appendPlayerRowToTable(`userPlayersTable_${playerData["owner"]}`, playersDb, playerData, leagueDocRef, doc.id, userUID, false, true);
+
+          if (playerData["owner"] === userUID) { // player belongs to current user
+            leagueDocRef.get().then((leagueDoc) => {
+              enforceRosterLimit(leagueDoc.data().rosterLimit, userUID);
+            }).catch((error) => {
+              console.error("Error getting document:", error);
+            });
+          }
         }
       }
       else if (change.type === "removed") {
@@ -96,7 +94,7 @@ function initLeagueCollectionListener(db, leagueName, userUID) {
       let startDraftButton = document.querySelector("button#startDraftButton");
       let endDraftButton = document.querySelector("button#endDraftButton");
 
-      renderOtherUserTables(doc.data().userNames, doc.data().userUIDs, userUID);
+      renderUserTables(doc.data().userNames, doc.data().userUIDs, userUID);
 
       if (!doc.data().draftStarted && !doc.data().draftEnded)
         document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = true);
@@ -213,56 +211,64 @@ function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDoc
 }
 
 // helper function for initPlayersCollectionListener()
-function enforceRosterLimit(rosterLimit) {
-  const totalRows = document.querySelectorAll("#userPlayersTable_curUser tr").length;
+function enforceRosterLimit(rosterLimit, userUID) {
+  const totalRows = document.querySelectorAll(`#userPlayersTable_${userUID} tr`).length;
   if (totalRows === rosterLimit + 1) {
     document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = true);
     showElementByID("rosterLimitHit");
   }  
   else {
-    // document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = false);
+    document.querySelectorAll("button.add_to_roster").forEach(btn => btn.disabled = false);
     hideElementByID("rosterLimitHit");
   }
 }
 
 // helper function for initLeagueCollectionListener()
-function renderOtherUserTables(allUserNames, allUserUIDs, curUserUID) {
+function renderUserTables(allUserNames, allUserUIDs, curUserUID) {
   for (let i = 0; i < allUserNames.length; i++) {
     const userName = allUserNames[i];
     const userUID = allUserUIDs[i];
     
-    if (userUID !== curUserUID) { // another user
-      if (document.querySelector(`#userPlayersTable_${userUID}`)) {
-        return;
-      }
-      
-      const section = document.createElement("section");
-
-      const heading = document.createElement("h2");
-      heading.textContent = `${userName}'s Players`;
-
-      const table = document.createElement("table");
-      table.id = `userPlayersTable_${userUID}`;
-
-      const tbody = document.createElement("tbody");
-
-      // Add header row
-      const headerRow = document.createElement("tr");
-      ["Player", "Team", "Role", "Agents"].forEach(text => {
-        const th = document.createElement("th");
-        th.scope = "col";
-        th.textContent = text;
-        headerRow.appendChild(th);
-      });
-      tbody.appendChild(headerRow);
-      table.appendChild(tbody);
-
-      section.appendChild(heading);
-      section.appendChild(table);
-
-      // Append to container
-      document.getElementById("userPlayersInfo").appendChild(section);
+    if (document.querySelector(`#userPlayersTable_${userUID}`)) {
+      return;
     }
+    
+    const section = document.createElement("section");
+
+    const rosterLimitHitHeader = document.createElement("h2");
+    rosterLimitHitHeader.id="rosterLimitHit";
+    rosterLimitHitHeader.classList.add("hidden");
+    rosterLimitHitHeader.textContent = "Roster Limit Hit, Cannot Add New Players";
+
+    const heading = document.createElement("h2");
+    if (userUID !== curUserUID) {
+      heading.textContent = `${userName}'s Players`;
+    }
+    else {
+      heading.textContent = `Your (${userName})'s Players`;
+    }
+    
+    const table = document.createElement("table");
+    table.id = `userPlayersTable_${userUID}`;
+    const tbody = document.createElement("tbody");
+    // Add header row
+    const headerRow = document.createElement("tr");
+    ["Player", "Team", "Role", "Agents"].forEach(text => {
+      const th = document.createElement("th");
+      th.scope = "col";
+      th.textContent = text;
+      headerRow.appendChild(th);
+    });
+    tbody.appendChild(headerRow);
+    table.appendChild(tbody);
+    
+    if (userUID === curUserUID) {
+      section.appendChild(rosterLimitHitHeader);
+    }
+    section.appendChild(heading);
+    section.appendChild(table);
+    // Append to container
+    document.getElementById("userPlayersInfo").appendChild(section);
   }
 }
 
@@ -498,8 +504,6 @@ window.addEventListener('load', () => {
 
       // Bind logout event to logout button
       document.querySelector("#logout").addEventListener("click", logoutUser);
-
-      document.querySelector("#curUserHeader").innerHTML = `Your (${user.displayName})'s Players`;
       
       // Initialize collection listeners
       initLeagueCollectionListener(db, leagueName, user.uid);
