@@ -498,6 +498,8 @@ window.addEventListener('load', () => {
 
       // Bind logout event to logout button
       document.querySelector("#logout").addEventListener("click", logoutUser);
+
+      document.querySelector("#curUserHeader").innerHTML = `Your (${user.displayName})'s Players`;
       
       // Initialize collection listeners
       initLeagueCollectionListener(db, leagueName, user.uid);
