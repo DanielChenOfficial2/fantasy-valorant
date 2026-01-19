@@ -25,7 +25,7 @@ db = firestore.client()
 fantasy_league_name = "2026_americas_kickoff"
 fantasy_leagues_collection_ref = db.collection("fantasy_leagues")
 doc_ref = fantasy_leagues_collection_ref.document(fantasy_league_name)
-doc_ref.set({"numUsers": 0, "name": "VCT 2026: Americas Kickoff", "userUIDs": [], "userNames": [], "draftStarted": 0, "draftEnded": 0, "ownerUID": "P0b2dX6FAeeTfeFIEDz7SNlwz4H2", "rosterLimit": 8})
+doc_ref.set({"numUsers": 0, "name": "VCT 2026: Americas Kickoff", "userUIDs": [], "userNames": [], "draftStarted": 0, "draftEnded": 0, "ownerUID": "P0b2dX6FAeeTfeFIEDz7SNlwz4H2", "totalRosterLimit": 8, "activeRosterLimit": 5})
 
 applicable_tournament_urls = ["https://www.vlr.gg/event/2682/vct-2026-americas-kickoff/main-event"]
 playerInfoArr = []

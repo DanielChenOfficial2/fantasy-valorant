@@ -46,3 +46,11 @@ h2#rosterLimitHit {
 .hidden {
   display: none;
 }
+
+.warning {
+  background-color: #d6ecd4;
+}
+
+.flex {
+  display: flex;
+}
