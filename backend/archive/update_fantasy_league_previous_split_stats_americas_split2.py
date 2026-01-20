@@ -15,7 +15,7 @@ player_roles = {
     "Asuna": "Flex",
     # end 100T
     # start FURIA
-    "Loss": "Duelist",
+    "Palla": "Duelist",
     "tuyz": "Smokes",
     "heat": "Sentinel",
     "Urango": "Flex",
@@ -84,9 +84,10 @@ player_roles = {
     # end G2
     # start LOUD
     "pANcada": "Smokes",
-    "Virtyy": "",
-    "RobbieBk": "",
+    "Virtyy": "Duelist",
+    "RobbieBk": "Initiator",
     "cauanzin": "Initiator",
+    "lukxo": "Sentinel"
     # end LOUD
 }
 
@@ -97,10 +98,10 @@ db = firestore.client()
 
 # think of the collection as the database and a document as an entry in that database
 # bunch of sample document setting
-fantasy_league_name = "2025_americas_split2"
+fantasy_league_name = "2026_americas_kickoff"
 fantasy_leagues_collection_ref = db.collection("fantasy_leagues")
 
-applicable_tournament_urls = ["https://www.vlr.gg/event/stats/2347/vct-2025-americas-stage-1"]
+applicable_tournament_urls = ["https://www.vlr.gg/event/stats/2501/vct-2025-americas-stage-2"]
 
 for applicable_tournament_url in applicable_tournament_urls:
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -113,10 +114,10 @@ for applicable_tournament_url in applicable_tournament_urls:
                         "Asuna", "Boostio", "eeiu", "Cryocells", "zander",
                         "mitch", "neT", "Xeppaa", "v1c", "OXY",
                         "supamen", "yay", "Derrek", "NaturE", "icy",
-                        "tuyz", "Urango", "heat", "Loss",
+                        "tuyz", "Urango", "heat", "Loss", "Palla",
                         "Melser", "keznit", "adverso", "Mazino", "Shyy",
                         "C0M", "tex", "Okeanos", "kiNgg", "Sato",
-                        "pANcada", "Virtyy", "RobbieBk", "cauanzin",
+                        "pANcada", "Virtyy", "RobbieBk", "cauanzin", "lukxo",
                         "brawk", "s0m", "mada", "skuba", "Ethan",
                         "valyn", "jawgemo", "JonahP", "leaf", "trent",
                         "lz", "silentzz", "gobera", "spike"}
@@ -175,7 +176,7 @@ for applicable_tournament_url in applicable_tournament_urls:
                                 "totalFK": player_total_fk,
                                 "totalFD": player_total_fd})
         except NotFound:
-            print(player_name + "not found in existing split 2 players")
+            print(player_name + " not found in existing split 2 players")
             player_doc_ref.set({
                                 "role": player_role,
                                 "agents": player_agents,
