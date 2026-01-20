@@ -202,6 +202,7 @@ function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDoc
     if (playersTableId.includes("active")) {
       moveRosterButton.innerHTML = "Move to Reserve";
       moveRosterButton.id = playerData['shorthandTeamName'] + "_" + docID + "_moveToReserve";
+      moveRosterButton.classList.add("move_to_reserve");
       moveRosterButton.addEventListener("click", function() {
         // Move player to reserve
         playersDb.doc(docID).update({"active": false});
@@ -211,6 +212,7 @@ function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDoc
     else if (playersTableId.includes("reserve")) {
       moveRosterButton.innerHTML = "Move to Active";
       moveRosterButton.id = playerData['shorthandTeamName'] + "_" + docID + "_moveToActive";
+      moveRosterButton.classList.add("move_to_active");
       moveRosterButton.addEventListener("click", function() {
         // Move player to active
         playersDb.doc(docID).update({"active": true});
@@ -270,11 +272,11 @@ function enforceActiveRosterLimit(activeRosterLimit, userUID) {
   const activeRows = document.querySelectorAll(`#userPlayersTable_${userUID}_active tr`).length - 1;
 
   if (activeRows === activeRosterLimit) {
-    document.querySelectorAll("button.add_to_active_roster").forEach(btn => btn.disabled = true);
+    document.querySelectorAll("button.move_to_active").forEach(btn => btn.disabled = true);
     showElementByID("activeRosterLimitHit");
   }  
   else {
-    document.querySelectorAll("button.add_to_active_roster").forEach(btn => btn.disabled = false);
+    document.querySelectorAll("button.move_to_active").forEach(btn => btn.disabled = false);
     hideElementByID("activeRosterLimitHit");
   }
 }
