@@ -62,6 +62,7 @@ function initPlayersCollectionListener(db, leagueName, userUID) {
         // console.log("Player data modified on server database:", doc.data());
         
         const playerId = "_" + playerData['shorthandTeamName'] + "_" + doc.id;
+        console.log("Modifying player:", playerId);
         removeElementById(playerId);
 
         // if player does not belong to anyone, add to available players
@@ -132,6 +133,49 @@ function initLeagueCollectionListener(db, leagueName, userUID) {
   });
 }
 
+  db.collection("fantasy_leagues").doc(leagueName).collection("scoreboard").doc("users").onSnapshot((doc) => {
+    if (doc.exists) {
+      console.log(doc.data())
+      const scoreboardTable = document.querySelector("table#scoreboardTable");
+      const row = scoreboardTable.insertRow();
+
+      const userName = row.insertCell(0);
+      userName.innerHTML = "asd"; 
+      
+      const userFantasyScore = row.insertCell(1);
+      userFantasyScore.innerHTML = "891.26";
+
+      const userSnowflakes = row.insertCell(2);
+      userSnowflakes.innerHTML = "3";
+
+      const row2 = scoreboardTable.insertRow();
+
+      const userName2 = row2.insertCell(0);
+      userName2.innerHTML = "Your"; 
+
+      const userFantasyScore2 = row2.insertCell(1);
+      userFantasyScore2.innerHTML = "762.1999999999999";
+
+      const userSnowflakes2 = row2.insertCell(2);
+      userSnowflakes2.innerHTML = "2";
+
+      const row3 = scoreboardTable.insertRow();
+
+      const userName3 = row3.insertCell(0);
+      userName3.innerHTML = "J"; 
+
+      const userFantasyScore3 = row3.insertCell(1);
+      userFantasyScore3.innerHTML = "581.9";
+
+      const userSnowflakes3 = row3.insertCell(2);
+      userSnowflakes3.innerHTML = "1";
+
+    }
+    else
+      console.log("No such document!");
+  });
+}
+
 function logoutUser() {
   firebase.auth().signOut().then(() => {
     // console.log("User logged out");
@@ -155,10 +199,8 @@ function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDoc
     
   const playerRole = row.insertCell(2);
   playerRole.innerHTML = playerData['role'] ?? "TBD";
-  const playerAgents = row.insertCell(3);
-  playerAgents.innerHTML = playerData['agents'] !== undefined
-                             ? playerData['agents'].join(", ")
-                             : "N/A";
+  const playerFantasyScore = row.insertCell(3);
+  playerFantasyScore.innerHTML = playerData['fantasyScore'] ?? 0.0;
 
   if (needsAddToRosterFunc) {
     const addToRosterCell = row.insertCell(4);
@@ -330,7 +372,7 @@ function renderUserTables(allUserNames, allUserUIDs, curUserUID) {
     const tbody = document.createElement("tbody");
     // Add header row
     const headerRow = document.createElement("tr");
-    ["Player", "Team", "Role", "Agents"].forEach(text => {
+    ["Player", "Team", "Role", "Fantasy Score"].forEach(text => {
       const th = document.createElement("th");
       th.scope = "col";
       th.textContent = text;
@@ -359,7 +401,7 @@ function handleDraftStarted(doc, lastDraftedHeader, draftHeader, userUID) {
   const curDraftTurn = doc.data().draftTurn;
   const numUsers = doc.data().numUsers;
   
-  console.log("remove buttons disabled")
+  console.log("remove buttons disabled");
   document.querySelectorAll("button.remove_from_roster").forEach(btn => btn.disabled = true);
   
   if (curRound !== 1 || curDraftTurn !== 1)
@@ -587,6 +629,7 @@ window.addEventListener('load', () => {
       document.querySelector("#logout").addEventListener("click", logoutUser);
       
       // Initialize collection listeners
+      initScoreboardCollectionListener(db, leagueName, user.uid);
       initLeagueCollectionListener(db, leagueName, user.uid);
       initPlayersCollectionListener(db, leagueName, user.uid);
     } else {
