@@ -133,6 +133,7 @@ function initLeagueCollectionListener(db, leagueName, userUID) {
   });
 }
 
+function initScoreboardCollectionListener(db, leagueName, userUID) {
   db.collection("fantasy_leagues").doc(leagueName).collection("scoreboard").doc("users").onSnapshot((doc) => {
     if (doc.exists) {
       console.log(doc.data())
