@@ -177,6 +177,70 @@ function initScoreboardCollectionListener(db, leagueName, userUID) {
   });
 }
 
+function initRosterLock() {
+  // Target time in UTC
+  const target = new Date('2026-01-23T22:00:00Z');
+
+  // If current time is before target, enable a persistent lock
+  let rosterLocked = (new Date() >= target);
+
+  function applyLock() {
+    if (!rosterLocked) return;
+    document.querySelectorAll("button.add_to_roster, button.remove_from_roster, button.move_to_active, button.move_to_reserve")
+      .forEach(btn => btn.disabled = true);
+  }
+
+  // Apply immediately
+  applyLock();
+
+  if (!rosterLocked) return;
+
+  // Observe DOM for new buttons being added or attribute changes that try to re-enable buttons
+  const observer = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.type === 'childList') {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return; // only element nodes
+          // If the added node itself is a button of interest
+          try {
+            if (node.matches && node.matches("button.add_to_roster, button.remove_from_roster, button.move_to_active, button.move_to_reserve")) {
+              node.disabled = true;
+            }
+            // Also enforce on any matching descendants
+            node.querySelectorAll && node.querySelectorAll("button.add_to_roster, button.remove_from_roster, button.move_to_active, button.move_to_reserve").forEach(b => b.disabled = true);
+          } catch (e) {
+            // ignore nodes that don't support matches/querySelectorAll
+          }
+        });
+      }
+      else if (m.type === 'attributes' && m.attributeName === 'disabled') {
+        const targetNode = m.target;
+        try {
+          if (targetNode.matches && targetNode.matches("button.add_to_roster, button.remove_from_roster, button.move_to_active, button.move_to_reserve")) {
+            // If something re-enabled the button while lock is active, re-disable it
+            if (!targetNode.disabled && rosterLocked) targetNode.disabled = true;
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+
+  // Periodically re-apply lock until the target time is reached
+  const intervalId = setInterval(() => {
+    if (new Date() >= target) {
+      rosterLocked = false;
+      observer.disconnect();
+      clearInterval(intervalId);
+      return;
+    }
+    applyLock();
+  }, 1000);
+}
+
 function logoutUser() {
   firebase.auth().signOut().then(() => {
     // console.log("User logged out");
@@ -190,6 +254,7 @@ function logoutUser() {
 function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDocRef, docID, userUID, needsAddToRosterFunc, needsRemoveFromRosterFunc) {
   const playersTable = document.querySelector(`#${playersTableId}`);
   const row = playersTable.insertRow();
+  console.log(playerData)
   row.id = "_" + playerData['shorthandTeamName'] + "_" + docID;
 
   const playerName = row.insertCell(0);
@@ -633,6 +698,7 @@ window.addEventListener('load', () => {
       initScoreboardCollectionListener(db, leagueName, user.uid);
       initLeagueCollectionListener(db, leagueName, user.uid);
       initPlayersCollectionListener(db, leagueName, user.uid);
+      initRosterLock();
     } else {
       // User is not signed in, redirect back to login
       // console.log("user not signed in")
