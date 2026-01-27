@@ -698,7 +698,7 @@ window.addEventListener('load', () => {
       initScoreboardCollectionListener(db, leagueName, user.uid);
       initLeagueCollectionListener(db, leagueName, user.uid);
       initPlayersCollectionListener(db, leagueName, user.uid);
-      initRosterLock();
+      // initRosterLock();
     } else {
       // User is not signed in, redirect back to login
       // console.log("user not signed in")
