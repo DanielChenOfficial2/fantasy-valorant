@@ -84,8 +84,24 @@ from bs4 import BeautifulSoup
 
 from google.api_core.exceptions import NotFound
 
-def calculate_fantasy_score(acs, k, a, d, fk, fd):
-    return 3.0 * k + 1.5 * a - 2.0 * d + 2.5 * fk - 2.0 * fd + 0.04 * acs
+import math
+
+def calculate_fantasy_score(cur_score, matches_played, acs, k, a, d, fk, fd):
+    raw = (
+        3.0 * k +
+        1.5 * a -
+        2.0 * d +
+        2.5 * fk -
+        2.0 * fd +
+        0.04 * acs
+    )
+
+    # Sign-preserving exponentiation
+    scaled = math.copysign(abs(raw) ** 1.1, raw)
+
+    weekly_score = (cur_score + scaled) / (matches_played ** 0.4)
+
+    return round(weekly_score, 2)
 
 # Application Default credentials are automatically created (with above gcloud commands)
 # simple firebase initialization
@@ -97,16 +113,15 @@ db = firestore.client()
 fantasy_league_name = "2026_americas_kickoff"
 fantasy_leagues_collection_ref = db.collection("fantasy_leagues")
 reset_player_stats = False
-current_week = 1
+current_week = 4
 
-applicable_tournament_urls = ["https://www.vlr.gg/596399/envy-vs-evil-geniuses-vct-2026-americas-kickoff-ur1",
-                              "https://www.vlr.gg/596398/loud-vs-cloud9-vct-2026-americas-kickoff-ur1",
-                              "https://www.vlr.gg/596400/kr-esports-vs-furia-vct-2026-americas-kickoff-ur1",
-                              "https://www.vlr.gg/596401/100-thieves-vs-leviat-n-vct-2026-americas-kickoff-ur1",
-                              "https://www.vlr.gg/596402/nrg-vs-cloud9-vct-2026-americas-kickoff-ur2",
-                              "https://www.vlr.gg/596403/mibr-vs-envy-vct-2026-americas-kickoff-ur2",
-                              "https://www.vlr.gg/596404/sentinels-vs-furia-vct-2026-americas-kickoff-ur2",
-                              "https://www.vlr.gg/596405/g2-esports-vs-100-thieves-vct-2026-americas-kickoff-ur2"]
+applicable_tournament_urls = [
+                                "https://www.vlr.gg/596421/envy-vs-evil-geniuses-vct-2026-americas-kickoff-lr2",
+                                "https://www.vlr.gg/596422/sentinels-vs-leviat-n-vct-2026-americas-kickoff-lr2",
+                                "https://www.vlr.gg/596423/100-thieves-vs-evil-geniuses-vct-2026-americas-kickoff-lr3",
+                                "https://www.vlr.gg/596424/cloud9-vs-leviat-n-vct-2026-americas-kickoff-lr3",
+                                "https://www.vlr.gg/596417/nrg-vs-g2-esports-vct-2026-americas-kickoff-mr4",
+                             ]
 playerInfoArr = []
 for applicable_tournament_url in applicable_tournament_urls:
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -143,6 +158,7 @@ for applicable_tournament_url in applicable_tournament_urls:
         player_current_a = 0
         player_current_fk = 0
         player_current_fd = 0
+        player_current_matches_played = 0
         player_current_fantasy_score = 0
         
         try:
@@ -154,6 +170,7 @@ for applicable_tournament_url in applicable_tournament_urls:
                 player_current_a = player_snapshot.get("A")
                 player_current_fk = player_snapshot.get("FK")
                 player_current_fd = player_snapshot.get("FD")
+                player_current_matches_played = player_snapshot.get("matchesPlayed") if player_snapshot.get("matchesPlayed") else 0
                 player_current_fantasy_score = player_snapshot.get("fantasyScore")
                 print(f"Existing stats for {player_name}: ACS={player_current_acs}, K={player_current_k}, D={player_current_d}, A={player_current_a}, FK={player_current_fk}, FD={player_current_fd}")
             else:
@@ -167,8 +184,9 @@ for applicable_tournament_url in applicable_tournament_urls:
         player_updated_a = int(player_current_a) + int(player_a)
         player_updated_fk = int(player_current_fk) + int(player_fk)
         player_updated_fd = int(player_current_fd) + int(player_fd)
-        player_updated_fantasy_score = float(player_current_fantasy_score) + float(calculate_fantasy_score(player_updated_acs, player_updated_k, player_updated_a, player_updated_d, player_updated_fk, player_updated_fd))
-        print(f"Updated stats for {player_name}: ACS={player_updated_acs}, K={player_updated_k}, D={player_updated_d}, A={player_updated_a}, FK={player_updated_fk}, FD={player_updated_fd}, fantasyScore={player_updated_fantasy_score}")
+        player_updated_matches_played = int(player_current_matches_played) + 1
+        player_updated_fantasy_score = calculate_fantasy_score(player_current_fantasy_score, player_updated_matches_played, player_updated_acs, player_updated_k, player_updated_a, player_updated_d, player_updated_fk, player_updated_fd)
+        print(f"Updated stats for {player_name}: ACS={player_updated_acs}, K={player_updated_k}, D={player_updated_d}, A={player_updated_a}, FK={player_updated_fk}, FD={player_updated_fd}, fantasyScore={player_updated_fantasy_score}, matchesPlayed={player_updated_matches_played}")
         print("-----")
 
         # Create weeks collection and a document for the current week
@@ -183,7 +201,8 @@ for applicable_tournament_url in applicable_tournament_urls:
                 "A": int(player_updated_a),
                 "FK": int(player_updated_fk),
                 "FD": int(player_updated_fd),
-                "fantasyScore": float(player_updated_fantasy_score)
+                "fantasyScore": float(player_updated_fantasy_score),
+                "matchesPlayed": int(player_updated_matches_played)
             })
             print(f"Created/updated week document: week{current_week}")
         except Exception as e:
@@ -198,7 +217,8 @@ for applicable_tournament_url in applicable_tournament_urls:
                                     "A": 0,
                                     "FK": 0,
                                     "FD": 0,
-                                    "fantasyScore": 0.0})
+                                    "fantasyScore": 0.0,
+                                    "matchesPlayed": 0})
             except Exception as e:
                 print(f"Update Error: {e}")
                 player_doc_ref.set({
@@ -210,7 +230,8 @@ for applicable_tournament_url in applicable_tournament_urls:
                                     "A": 0,
                                     "FK": 0,
                                     "FD": 0,
-                                    "fantasyScore": 0.0})
+                                    "fantasyScore": 0.0,
+                                    "matchesPlayed": 0})
         else:
             try:
                 player_doc_ref.update({
@@ -220,7 +241,8 @@ for applicable_tournament_url in applicable_tournament_urls:
                                     "A": int(player_updated_a),
                                     "FK": int(player_updated_fk),
                                     "FD": int(player_updated_fd),
-                                    "fantasyScore": float(player_updated_fantasy_score)})
+                                    "fantasyScore": float(player_updated_fantasy_score),
+                                    "matchesPlayed": int(player_updated_matches_played)})
             except Exception as e:
                 print(f"Update Error: {e}")
                 player_doc_ref.set({
@@ -232,7 +254,8 @@ for applicable_tournament_url in applicable_tournament_urls:
                                     "A": int(player_updated_a),
                                     "FK": int(player_updated_fk),
                                     "FD": int(player_updated_fd),
-                                    "fantasyScore": float(player_updated_fantasy_score)})
+                                    "fantasyScore": float(player_updated_fantasy_score),
+                                    "matchesPlayed": int(player_updated_matches_played)})
 
         # print(player_doc_ref)
         # try:
