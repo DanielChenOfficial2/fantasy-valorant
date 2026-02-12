@@ -144,10 +144,10 @@ function initScoreboardCollectionListener(db, leagueName, userUID) {
       userName.innerHTML = "asd"; 
       
       const userFantasyScore = row.insertCell(1);
-      userFantasyScore.innerHTML = "891.26";
+      userFantasyScore.innerHTML = "370.78";
 
       const userSnowflakes = row.insertCell(2);
-      userSnowflakes.innerHTML = "3";
+      userSnowflakes.innerHTML = "-10000";
 
       const row2 = scoreboardTable.insertRow();
 
@@ -155,10 +155,10 @@ function initScoreboardCollectionListener(db, leagueName, userUID) {
       userName2.innerHTML = "Your"; 
 
       const userFantasyScore2 = row2.insertCell(1);
-      userFantasyScore2.innerHTML = "762.1999999999999";
+      userFantasyScore2.innerHTML = "385.8";
 
       const userSnowflakes2 = row2.insertCell(2);
-      userSnowflakes2.innerHTML = "2";
+      userSnowflakes2.innerHTML = "3";
 
       const row3 = scoreboardTable.insertRow();
 
@@ -166,10 +166,10 @@ function initScoreboardCollectionListener(db, leagueName, userUID) {
       userName3.innerHTML = "J"; 
 
       const userFantasyScore3 = row3.insertCell(1);
-      userFantasyScore3.innerHTML = "581.9";
+      userFantasyScore3.innerHTML = "667.33";
 
       const userSnowflakes3 = row3.insertCell(2);
-      userSnowflakes3.innerHTML = "1";
+      userSnowflakes3.innerHTML = "3";
 
     }
     else
@@ -280,6 +280,7 @@ function logoutUser() {
 
 // helper function for initPlayersCollectionListener()
 function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDocRef, docID, userUID, needsAddToRosterFunc, needsRemoveFromRosterFunc) {
+  console.log(`Appending player ${docID} to table ${playersTableId}`);
   const playersTable = document.querySelector(`#${playersTableId}`);
   const row = playersTable.insertRow();
   // console.log(playerData)
