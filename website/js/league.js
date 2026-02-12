@@ -177,17 +177,42 @@ function initScoreboardCollectionListener(db, leagueName, userUID) {
   });
 }
 
-function initRosterLock() {
+function initRosterLock(db, leagueName) {
   // Target time in UTC
   const target = new Date('2026-01-23T22:00:00Z');
 
-  // If current time is before target, enable a persistent lock
-  let rosterLocked = (new Date() >= target);
+  db.collection("fantasy_leagues")
+    .doc(leagueName)
+    .onSnapshot((doc) => {
+      if (!doc.exists) {
+        console.error("League not found");
+        return;
+      }
+
+      const data = doc.data();
+      const rosterLockTimestamp = data.rosterLockDate;
+
+      if (!rosterLockTimestamp) {
+        console.error("rosterLockDate not set");
+        return;
+      }
+        console.log("Roster lock timestamp from server:", rosterLockTimestamp.toDate());
+
+      const target = rosterLockTimestamp.toDate(); // Firestore Timestamp → JS Date
+      const now = new Date();
+
+      // If current time is before target, enable a persistent lock
+  let rosterLocked = (now >= target);
 
   function applyLock() {
-    if (!rosterLocked) return;
-    document.querySelectorAll("button.add_to_roster, button.remove_from_roster, button.move_to_active, button.move_to_reserve")
+    if (!rosterLocked) {
+      document.querySelector("h2#rosterLockHeader").classList.add("hidden");
+    }
+    else {
+      document.querySelector("h2#rosterLockHeader").classList.remove("hidden");
+      document.querySelectorAll("button.add_to_roster, button.remove_from_roster, button.move_to_active, button.move_to_reserve")
       .forEach(btn => btn.disabled = true);
+    }
   }
 
   // Apply immediately
@@ -239,6 +264,9 @@ function initRosterLock() {
     }
     applyLock();
   }, 1000);
+    });
+
+  
 }
 
 function logoutUser() {
@@ -254,7 +282,7 @@ function logoutUser() {
 function appendPlayerRowToTable(playersTableId, playersDb, playerData, leagueDocRef, docID, userUID, needsAddToRosterFunc, needsRemoveFromRosterFunc) {
   const playersTable = document.querySelector(`#${playersTableId}`);
   const row = playersTable.insertRow();
-  console.log(playerData)
+  // console.log(playerData)
   row.id = "_" + playerData['shorthandTeamName'] + "_" + docID;
 
   const playerName = row.insertCell(0);
@@ -698,7 +726,7 @@ window.addEventListener('load', () => {
       initScoreboardCollectionListener(db, leagueName, user.uid);
       initLeagueCollectionListener(db, leagueName, user.uid);
       initPlayersCollectionListener(db, leagueName, user.uid);
-      // initRosterLock();
+      initRosterLock(db, leagueName);
     } else {
       // User is not signed in, redirect back to login
       // console.log("user not signed in")

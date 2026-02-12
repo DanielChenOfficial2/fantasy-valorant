@@ -35,11 +35,7 @@ main {
   gap: 10vw;
 }
 
-h2#draftHeader {
-  text-decoration: underline;
-}
-
-h2#rosterLimitHit {
+h2#draftHeader, h2#rosterLimitHit, h2#rosterLockHeader {
   text-decoration: underline;
 }
 
